@@ -1,0 +1,753 @@
+<!-- Save as index.html and open in a browser -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Chime Interval</title>
+<style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#7dd3fc;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
+    html,body{height:100%}
+    body{
+        margin:0;
+        font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        background:linear-gradient(180deg,#071021 0%, #081022 100%);
+        color:#e6eef6;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:24px;
+    }
+    .layout{width:100%;max-width:960px;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+    .card{
+        flex:1 1 520px;
+        background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+        border-radius:12px;
+        padding:20px;
+        box-shadow: 0 6px 30px rgba(2,6,23,0.6);
+        border:1px solid rgba(255,255,255,0.03);
+    }
+    .notes{
+        flex:1 1 300px;
+        background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.005));
+        border-radius:12px;
+        padding:18px;
+        box-shadow: 0 6px 24px rgba(2,6,23,0.35);
+        border:1px solid rgba(255,255,255,0.02);
+        display:flex;
+        flex-direction:column;
+    }
+    .header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+    .title-area{display:flex;flex-direction:column;gap:8px}
+    h1{font-size:18px;margin:0;color:var(--accent)}
+    .subtitle{margin:0;color:var(--muted);font-size:13px;letter-spacing:0.12em;text-transform:uppercase}
+    .notes-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+    .notes-header h2{margin:0;font-size:16px;color:var(--accent)}
+    .notes-form{display:flex;gap:10px;align-items:center}
+    .notes-form .action-btn{white-space:nowrap}
+    .notes-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .notes-actions .action-btn{flex:1 1 auto;min-width:120px}
+    .notes-form{flex-wrap:wrap}
+    .notes-form .step-input{flex:1 1 240px;min-width:180px}
+    p.lead{margin:0 0 16px 0;color:var(--muted);font-size:13px}
+    .row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+    .time-controls{width:100%}
+    .time-block{flex:1;min-width:100px;background:var(--glass);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+    .time-label{font-size:12px;letter-spacing:0.04em;text-transform:uppercase;color:var(--muted)}
+    .time-adjust{display:flex;gap:8px;align-items:center}
+    .time-input{
+        flex:1;
+        appearance:none;
+        border:none;
+        background:rgba(255,255,255,0.04);
+        color:inherit;
+        padding:10px 0;
+        text-align:center;
+        font-size:16px;
+        font-variant-numeric:tabular-nums;
+        border-radius:8px;
+    }
+    .time-input::-webkit-inner-spin-button,
+    .time-input::-webkit-outer-spin-button{appearance:none;margin:0}
+    .adjust{
+        width:36px;
+        height:36px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:50%;
+        border:1px solid rgba(125,211,252,0.25);
+        background:rgba(125,211,252,0.08);
+        color:var(--accent);
+        font-weight:700;
+        font-size:16px;
+        cursor:pointer;
+        transition:transform 160ms ease, box-shadow 160ms ease, filter 180ms ease;
+    }
+    .adjust:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(125,211,252,0.22)}
+    .adjust:active{transform:translateY(1px);filter:brightness(0.94)}
+    .adjust:focus-visible,
+    .time-input:focus-visible,
+    .action-btn:focus-visible{outline:2px solid rgba(125,211,252,0.8);outline-offset:2px}
+    .step-tools{
+        margin-top:18px;
+        background:rgba(125,211,252,0.04);
+        border:1px solid rgba(125,211,252,0.1);
+        border-radius:12px;
+        padding:14px 16px;
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+    }
+    .step-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .step-title{font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);font-weight:600}
+    .step-form{display:flex;gap:10px;align-items:center}
+    .step-input{
+        flex:1;
+        appearance:none;
+        border:1px solid rgba(125,211,252,0.2);
+        background:rgba(7,16,33,0.4);
+        color:#dff7ff;
+        padding:10px 12px;
+        border-radius:8px;
+        font-size:14px;
+    }
+    .step-input::placeholder{color:rgba(148,163,184,0.7)}
+    .notes-list{
+        margin:12px 0 0 0;
+        padding-left:20px;
+        font-size:13px;
+        color:#dff7ff;
+        overflow:auto;
+        list-style-position:outside;
+        list-style:disc;
+        flex:1;
+        max-height:235px;
+    }
+    .notes-list li{margin:0 0 10px 0}
+    .note-main{font-weight:600;color:#dff7ff;display:block;margin-bottom:4px}
+    .note-sublist{
+        margin:4px 0 0 0;
+        padding-left:18px;
+        color:rgba(191,219,254,0.8);
+        list-style:circle;
+    }
+    .note-sublist li{margin:0}
+    .action-btn{
+        background:linear-gradient(180deg,var(--accent),#4fc3ff);
+        border:none;
+        color:#022;
+        padding:10px 14px;
+        border-radius:8px;
+        font-weight:600;
+        cursor:pointer;
+        transition:transform 160ms ease, box-shadow 160ms ease, filter 180ms ease;
+    }
+    .action-btn:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 12px 24px rgba(79,195,255,0.25)}
+    .action-btn:not(:disabled):active{transform:translateY(1px);filter:brightness(0.96)}
+    .action-btn:disabled{cursor:not-allowed;opacity:0.55}
+    .action-btn.tertiary{
+        background:rgba(125,211,252,0.12);
+        border:1px solid rgba(125,211,252,0.35);
+        color:var(--accent);
+    }
+    .row.actions{margin-top:18px}
+    .action-btn.stop{
+        background:linear-gradient(180deg,#f87171,#ef4444);
+        color:#fff;
+        border:none;
+        box-shadow:0 10px 24px rgba(239,68,68,0.28);
+    }
+    .action-btn.stop:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 16px 30px rgba(239,68,68,0.32)}
+    .action-btn.stop:not(:disabled):active{transform:translateY(1px);filter:brightness(0.94)}
+    .action-btn.stop:disabled{
+        background:rgba(248,113,113,0.25);
+        color:rgba(255,255,255,0.7);
+        box-shadow:none;
+        border:1px solid rgba(248,113,113,0.35);
+        opacity:1;
+    }
+    .btn-pulse{animation:btnPulse 320ms ease}
+    @keyframes btnPulse{
+        0%{transform:scale(1)}
+        45%{transform:scale(1.05)}
+        100%{transform:scale(1)}
+    }
+    .info{margin-top:12px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:10px}
+    .big{font-weight:700;color:#dff7ff}
+    label.switch{display:inline-flex;gap:8px;align-items:center;color:var(--muted);cursor:pointer}
+    .status{margin-top:10px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;min-height:20px;transition:color 200ms ease}
+    .status-dot{width:8px;height:8px;border-radius:50%;background:rgba(148,163,184,0.55);box-shadow:0 0 0 0 rgba(125,211,252,0.1);transition:all 220ms ease}
+    .status.running{color:#dff7ff}
+    .status.running .status-dot{background:var(--accent);box-shadow:0 0 0 4px rgba(125,211,252,0.18)}
+    .count{margin-top:12px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .count-label{font-size:12px;text-transform:uppercase;letter-spacing:0.05em}
+    .count.chime-count{font-size:12px;color:rgba(148,163,184,0.8)}
+    .error{color:#ffb4b4;margin-top:10px;font-size:13px}
+    a{color:inherit}
+    @media (max-width:420px){
+        .row{flex-direction:column}
+        .step-form,
+        .notes-form{flex-direction:column;align-items:stretch}
+        .step-form .action-btn,
+        .notes-form .action-btn{width:100%}
+    }
+    @media (max-width:840px){
+        .layout{flex-direction:column}
+        .card,
+        .notes{flex:1 1 auto;width:100%}
+    }
+</style>
+</head>
+<body>
+    <div class="layout">
+    <div class="card" role="main">
+        <div class="header">
+            <div class="title-area">
+                <h1>Quick Plan</h1>
+                <h2 class="subtitle">Set Time Blocks</h2>
+            </div>
+            <button id="btnReset" class="action-btn stop">Reset timer</button>
+        </div>
+
+        <div class="row time-controls" role="group" aria-label="Timer duration">
+            <div class="time-block">
+                <span class="time-label">Hours</span>
+                <div class="time-adjust">
+                    <button class="adjust" data-target="hours" data-delta="1" aria-label="Increase hours">+</button>
+                    <input id="inputHours" class="time-input" type="number" inputmode="numeric" min="0" max="99" value="0" aria-label="Hours" />
+                    <button class="adjust" data-target="hours" data-delta="-1" aria-label="Decrease hours">-</button>
+                </div>
+            </div>
+            <div class="time-block">
+                <span class="time-label">Minutes</span>
+                <div class="time-adjust">
+                    <button class="adjust" data-target="minutes" data-delta="1" aria-label="Increase minutes">+</button>
+                    <input id="inputMinutes" class="time-input" type="number" inputmode="numeric" min="0" max="59" value="1" aria-label="Minutes" />
+                    <button class="adjust" data-target="minutes" data-delta="-1" aria-label="Decrease minutes">-</button>
+                </div>
+            </div>
+            <div class="time-block">
+                <span class="time-label">Seconds</span>
+                <div class="time-adjust">
+                    <button class="adjust" data-target="seconds" data-delta="1" aria-label="Increase seconds">+</button>
+                    <input id="inputSeconds" class="time-input" type="number" inputmode="numeric" min="0" max="59" value="0" aria-label="Seconds" />
+                    <button class="adjust" data-target="seconds" data-delta="-1" aria-label="Decrease seconds">-</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row actions">
+            <button id="btnStart" class="action-btn">Start</button>
+            <button id="btnStop" class="action-btn stop" disabled>Stop</button>
+        </div>
+
+        <div class="step-tools">
+            <div class="step-header">
+                <span class="step-title">Plan your focus</span>
+                <label class="switch" title="Pause after each chime until a new step is added"><input id="waitForStep" type="checkbox" /> Wait for next step</label>
+            </div>
+            <form id="stepForm" class="step-form">
+                <input id="stepInput" class="step-input" type="text" placeholder="Describe what you'll tackle this block and press Enter" aria-label="Step description" autocomplete="off" />
+                <button type="submit" class="action-btn tertiary">Add step</button>
+            </form>
+        </div>
+
+        <div id="status" class="status" role="status" aria-live="polite">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="statusText">Ready</span>
+        </div>
+
+        <div class="count">
+            <span class="count-label">Time remaining:</span>
+            <span id="countdown" class="big">—</span>
+        </div>
+        <div class="count chime-count">Chimes: <span id="counter">0</span></div>
+        <div id="error" class="error" role="status" aria-live="polite" hidden></div>
+    </div>
+    <aside class="notes" aria-labelledby="notesTitle">
+        <div class="notes-header">
+            <h2 id="notesTitle">Notes</h2>
+        </div>
+        <form id="notesForm" class="notes-form">
+            <input id="notesInput" class="step-input" type="text" placeholder="Jot a note and press Enter" aria-label="Add note" autocomplete="off" />
+            <div class="notes-actions">
+                <button type="submit" class="action-btn tertiary">Add note</button>
+                <button type="button" id="btnCopyNotes" class="action-btn tertiary">Copy notes</button>
+                <button type="button" id="btnClearNotes" class="action-btn stop">Clear notes</button>
+            </div>
+        </form>
+        <ul id="notesList" class="notes-list" aria-live="polite"></ul>
+    </aside>
+    </div>
+
+<script>
+/* Parsing and chime app */
+(() => {
+    const inputHours = document.getElementById('inputHours');
+    const inputMinutes = document.getElementById('inputMinutes');
+    const inputSeconds = document.getElementById('inputSeconds');
+    const btnStart = document.getElementById('btnStart');
+    const btnStop = document.getElementById('btnStop');
+    const counterEl = document.getElementById('counter');
+    const errorEl = document.getElementById('error');
+    const statusWrap = document.getElementById('status');
+    const statusText = document.getElementById('statusText');
+    const countdownEl = document.getElementById('countdown');
+    const adjustButtons = document.querySelectorAll('.adjust');
+    const stepForm = document.getElementById('stepForm');
+    const stepInput = document.getElementById('stepInput');
+    const waitForStepBox = document.getElementById('waitForStep');
+    const btnReset = document.getElementById('btnReset');
+    const notesForm = document.getElementById('notesForm');
+    const notesInput = document.getElementById('notesInput');
+    const notesList = document.getElementById('notesList');
+    const btnCopyNotes = document.getElementById('btnCopyNotes');
+    const btnClearNotes = document.getElementById('btnClearNotes');
+
+    const GENERAL_SECTION_TITLE = 'General';
+
+    let startTimeout = null;
+    let countdownTimer = null;
+    let intervalMs = 0;
+    let endTime = null;
+    let count = 0;
+    let audioCtx = null;
+    let waitingForStep = false;
+    let activeNoteSection = null;
+
+    function showError(msg){
+        if(!msg){ errorEl.hidden = true; errorEl.textContent = ''; return; }
+        errorEl.hidden = false;
+        errorEl.textContent = msg;
+    }
+
+    function clamp(val, min, max){
+        return Math.max(min, Math.min(max, val));
+    }
+
+    function readUnit(inputEl, max){
+        const min = Number.parseInt(inputEl.min || '0', 10) || 0;
+        const raw = Number.parseInt(inputEl.value, 10);
+        const safe = Number.isNaN(raw) ? min : raw;
+        const clamped = clamp(safe, min, max);
+        if(clamped !== safe || inputEl.value === ''){
+            inputEl.value = String(clamped);
+        }
+        return clamped;
+    }
+
+    function getDurationMs(){
+        const hours = readUnit(inputHours, Number.parseInt(inputHours.max || '99', 10) || 99);
+        const minutes = readUnit(inputMinutes, 59);
+        const seconds = readUnit(inputSeconds, 59);
+        return ((hours * 3600) + (minutes * 60) + seconds) * 1000;
+    }
+
+    function formatHuman(ms){
+        if(ms < 1000) return ms + ' ms';
+        const s = ms / 1000;
+        if(s < 60) return (Math.round(s*100)/100) + ' s';
+        const m = s / 60;
+        if(m < 60) return (Math.round(m*100)/100) + ' min';
+        const h = m / 60;
+        return (Math.round(h*100)/100) + ' h';
+    }
+
+    function formatCountdown(ms){
+        if(ms <= 0) return '00:00:00';
+        const totalSeconds = Math.ceil(ms / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        const parts = [
+            hours.toString().padStart(2, '0'),
+            minutes.toString().padStart(2, '0'),
+            seconds.toString().padStart(2, '0')
+        ];
+        return parts.join(':');
+    }
+
+    function beep(){
+        try {
+            if(!audioCtx){
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            const ctx = audioCtx;
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.type = 'sine';
+            o.frequency.value = 660;
+            g.gain.value = 0.0001;
+            o.connect(g);
+            g.connect(ctx.destination);
+            const now = ctx.currentTime;
+            o.start(now);
+            g.gain.exponentialRampToValueAtTime(0.12, now + 0.05);
+            g.gain.setValueAtTime(0.12, now + 1.85);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + 2);
+            o.stop(now + 2.05);
+        } catch(e){
+            // fallback using alert beep (very rare)
+            console.warn('Audio failed', e);
+        }
+    }
+
+    function startInterval(ms){
+        stopInterval(true);
+        count = 0;
+        counterEl.textContent = '0';
+        intervalMs = ms;
+        waitingForStep = false;
+        btnStart.disabled = true;
+        btnStop.disabled = false;
+        scheduleNextRun();
+    }
+
+    function stopInterval(silent = false){
+        if(startTimeout){ clearTimeout(startTimeout); startTimeout = null; }
+        if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
+        intervalMs = 0;
+        waitingForStep = false;
+        endTime = null;
+        refreshCountdown();
+        btnStart.disabled = false;
+        btnStop.disabled = true;
+        if(!silent){
+            setStatus('Stopped', false);
+        }
+    }
+
+    function scheduleNextRun(){
+        if(intervalMs <= 0) return;
+        if(startTimeout){ clearTimeout(startTimeout); }
+        startCountdown(intervalMs);
+        setStatus(`Counting down ${formatHuman(intervalMs)} between chimes`, true);
+        startTimeout = setTimeout(handleCountdownComplete, intervalMs);
+    }
+
+    function handleCountdownComplete(){
+        startTimeout = null;
+        refreshCountdown();
+        triggerChime();
+        if(waitForStepBox && waitForStepBox.checked){
+            pauseForNextStep();
+        } else {
+            scheduleNextRun();
+        }
+    }
+
+    function pauseForNextStep(){
+        waitingForStep = true;
+        if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
+        endTime = null;
+        refreshCountdown();
+        setStatus('Waiting for your next step', false);
+        btnStart.disabled = true;
+        if(stepInput){
+            stepInput.focus();
+        }
+    }
+
+    function triggerChime(){
+        count += 1;
+        counterEl.textContent = String(count);
+        beep();
+    }
+
+    function updatePreview(){
+        const ms = getDurationMs();
+        if(ms <= 0){
+            showError('');
+            return 0;
+        }
+        showError('');
+        return ms;
+    }
+
+    function setStatus(message, running){
+        if(!statusWrap || !statusText) return;
+        statusText.textContent = message;
+        statusWrap.classList.toggle('running', !!running);
+    }
+
+    function noteStatus(message){
+        if(!statusWrap || !statusText) return;
+        const wasRunning = statusWrap.classList.contains('running');
+        statusText.textContent = message;
+        statusWrap.classList.toggle('running', wasRunning);
+    }
+
+    function hasFocusSteps(){
+        if(!notesList) return false;
+        const generalName = GENERAL_SECTION_TITLE.toLowerCase();
+        return Array.from(notesList.querySelectorAll('.note-main')).some((node) => {
+            return node.textContent.trim().toLowerCase() !== generalName;
+        });
+    }
+
+    function pulseButton(btn){
+        if(!btn) return;
+        btn.classList.remove('btn-pulse');
+        void btn.offsetWidth;
+        btn.classList.add('btn-pulse');
+        setTimeout(() => btn.classList.remove('btn-pulse'), 320);
+    }
+
+    function startCountdown(ms){
+        endTime = performance.now() + ms;
+        refreshCountdown();
+        if(!countdownTimer){
+            countdownTimer = setInterval(refreshCountdown, 200);
+        }
+    }
+
+    function refreshCountdown(){
+        if(!countdownEl) return;
+        if(!endTime){
+            countdownEl.textContent = '—';
+            return;
+        }
+        const remaining = Math.max(0, endTime - performance.now());
+        countdownEl.textContent = formatCountdown(remaining);
+    }
+
+    function addStep(text){
+        const trimmed = text.trim();
+        if(!trimmed) return;
+        ensureNoteSection(trimmed);
+        if(stepInput){
+            stepInput.value = '';
+            stepInput.focus();
+        }
+        showError('');
+        if(waitingForStep && intervalMs > 0 && (!waitForStepBox || waitForStepBox.checked)){
+            waitingForStep = false;
+            scheduleNextRun();
+        }
+    }
+
+    function addNote(text){
+        if(!notesList) return;
+        const trimmed = text.trim();
+        if(!trimmed) return;
+        let targetList = activeNoteSection;
+        if(!targetList || !notesList.contains(targetList)){
+            const last = notesList.lastElementChild && notesList.lastElementChild.querySelector('.note-sublist');
+            if(last){
+                targetList = last;
+                activeNoteSection = last;
+            }
+        }
+        if(!targetList){
+            targetList = ensureNoteSection(GENERAL_SECTION_TITLE);
+        }
+        if(!targetList) return;
+        const li = document.createElement('li');
+        li.textContent = trimmed;
+        targetList.appendChild(li);
+        const parent = targetList.parentElement;
+        if(parent){ parent.classList.add('has-notes'); }
+        notesList.scrollTop = notesList.scrollHeight;
+        activeNoteSection = targetList;
+        showError('');
+        if(notesInput){
+            notesInput.value = '';
+            notesInput.focus();
+        }
+    }
+
+    function ensureNoteSection(title){
+        if(!notesList) return null;
+        const normalized = title.trim();
+        if(!normalized) return null;
+        const existing = Array.from(notesList.querySelectorAll(':scope > li')).find((item) => {
+            const main = item.querySelector('.note-main');
+            return main && main.textContent.trim().toLowerCase() === normalized.toLowerCase();
+        });
+        let sub = null;
+        if(existing){
+            sub = existing.querySelector('.note-sublist');
+        } else {
+            const li = document.createElement('li');
+            const main = document.createElement('span');
+            main.className = 'note-main';
+            main.textContent = normalized;
+            sub = document.createElement('ul');
+            sub.className = 'note-sublist';
+            li.appendChild(main);
+            li.appendChild(sub);
+            notesList.appendChild(li);
+            notesList.scrollTop = notesList.scrollHeight;
+        }
+        if(sub){
+            activeNoteSection = sub;
+        }
+        return sub;
+    }
+
+    // Wire events
+    const timeFields = [
+        { el: inputHours, max: Number.parseInt(inputHours.max || '99', 10) || 99 },
+        { el: inputMinutes, max: 59 },
+        { el: inputSeconds, max: 59 }
+    ];
+
+    function handleDurationChange(){
+        const ms = updatePreview();
+        if(intervalMs > 0){
+            if(ms < 1000){
+                showError('Interval too small. Must be at least 1 second.');
+                return;
+            }
+            intervalMs = ms;
+            scheduleNextRun();
+        }
+    }
+
+    timeFields.forEach(({ el, max }) => {
+        el.addEventListener('input', () => {
+            updatePreview();
+        });
+        el.addEventListener('change', () => {
+            readUnit(el, max);
+            handleDurationChange();
+        });
+        el.addEventListener('blur', () => {
+            readUnit(el, max);
+            handleDurationChange();
+        });
+        el.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter'){
+                btnStart.click();
+            }
+        });
+    });
+
+    adjustButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.target;
+            const delta = Number.parseInt(btn.dataset.delta || '0', 10) || 0;
+            const map = {
+                hours: { el: inputHours, max: Number.parseInt(inputHours.max || '99', 10) || 99 },
+                minutes: { el: inputMinutes, max: 59 },
+                seconds: { el: inputSeconds, max: 59 }
+            };
+            const entry = map[target];
+            if(!entry) return;
+            const current = readUnit(entry.el, entry.max);
+            const next = clamp(current + delta, Number.parseInt(entry.el.min || '0', 10) || 0, entry.max);
+            entry.el.value = String(next);
+            handleDurationChange();
+        });
+    });
+
+    if(btnReset){
+        btnReset.addEventListener('click', () => {
+            stopInterval();
+            inputHours.value = '0';
+            inputMinutes.value = '0';
+            inputSeconds.value = '0';
+            updatePreview();
+            pulseButton(btnReset);
+            count = 0;
+            counterEl.textContent = '0';
+            setStatus('Ready to chime', false);
+            showError('');
+        });
+    }
+
+    if(stepForm){
+        stepForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            addStep(stepInput ? stepInput.value : '');
+        });
+    }
+
+    if(notesForm){
+        notesForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            addNote(notesInput ? notesInput.value : '');
+        });
+    }
+
+    if(btnCopyNotes){
+        btnCopyNotes.addEventListener('click', async () => {
+            if(!notesList || !notesList.children.length){
+                showError('No notes to copy yet.');
+                return;
+            }
+            const lines = [];
+            notesList.querySelectorAll(':scope > li').forEach((item) => {
+                const main = item.querySelector('.note-main');
+                if(main){
+                    lines.push(`- ${main.textContent}`);
+                }
+                const subs = item.querySelectorAll('.note-sublist > li');
+                subs.forEach((sub) => {
+                    lines.push(`  • ${sub.textContent}`);
+                });
+            });
+            try {
+                await navigator.clipboard.writeText(lines.join('\n'));
+                showError('');
+                noteStatus('Notes copied to clipboard');
+            } catch(e){
+                console.warn('Clipboard failed', e);
+                showError('Could not copy notes. Check browser permissions.');
+            }
+        });
+    }
+
+    if(btnClearNotes){
+        btnClearNotes.addEventListener('click', () => {
+            notesList.innerHTML = '';
+            activeNoteSection = null;
+            showError('');
+            noteStatus('Notes cleared');
+        });
+    }
+
+    if(waitForStepBox){
+        waitForStepBox.addEventListener('change', () => {
+            if(!waitForStepBox.checked && waitingForStep && intervalMs > 0){
+                waitingForStep = false;
+                scheduleNextRun();
+            }
+        });
+    }
+
+    btnStart.addEventListener('click', () => {
+        const ms = updatePreview();
+        if(ms <= 0){
+            showError('Duration must be greater than zero.');
+            return;
+        }
+        if(ms < 1000){
+            showError('Interval too small. Must be at least 1 second.');
+            return;
+        }
+        if(waitForStepBox && waitForStepBox.checked && !hasFocusSteps()){
+            showError('Add a step before starting when wait mode is enabled.');
+            if(stepInput){
+                stepInput.focus();
+            }
+            return;
+        }
+        showError('');
+        startInterval(ms);
+        pulseButton(btnStart);
+    });
+
+    btnStop.addEventListener('click', () => {
+        pulseButton(btnStop);
+        stopInterval();
+    });
+
+    // initialize
+    updatePreview();
+    setStatus('Ready to chime', false);
+})();
+</script>
+</body>
+</html>
